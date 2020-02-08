@@ -44,7 +44,7 @@ class GameMap:
         rooms = []
         num_rooms = 0
 
-        for r in range(max_rooms):
+        for _ in range(max_rooms):
             # random width and height
             w = randint(room_min_size, room_max_size)
             h = randint(room_min_size, room_max_size)
