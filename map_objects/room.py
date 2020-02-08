@@ -26,11 +26,11 @@ class Room:
         center_y = int((self.y1 + self.y2) / 2)
         return (center_x, center_y)
 
-    def intersect(self, other: Room) -> bool:
+    def intersect(self, other: object) -> bool:
         """Checks for room intersection
         
         Arguments:
-            other {Room} -- other room object to comparison
+            other {object} -- other room object to comparison
         
         Returns:
             bool -- True if the rooms intersect
