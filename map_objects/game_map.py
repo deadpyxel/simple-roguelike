@@ -33,3 +33,15 @@ class GameMap:
         tiles[32][22].block_sight = True
 
         return tiles
+
+    def is_blocked(self, x: int, y: int) -> bool:
+        """Checks if given map position is blocked
+        
+        Arguments:
+            x {int} -- x position
+            y {int} -- y position
+        
+        Returns:
+            bool -- Blocking state of target tile
+        """        
+        return self.tiles[x][y].blocked

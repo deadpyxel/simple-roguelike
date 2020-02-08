@@ -2,6 +2,7 @@ import tcod as libtcod
 
 from entity import Entity
 from input_handlers import handle_keys
+from map_objects.game_map import GameMap
 from render_functions import clear_all, render_all
 
 
@@ -70,7 +71,8 @@ def main():
         # Handle movement
         if move:
             dx, dy = move
-            player.move(dx, dy)
+            if not game_map.is_blocked(player.x + dx, player.y + dy):
+                player.move(dx, dy)
         # Handle game exit
         if _exit:
             return True
