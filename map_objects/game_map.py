@@ -1,4 +1,7 @@
+from random import randint
+
 from map_objects.tile import Tile
+from map_objects.room import Room
 
 
 class GameMap:
@@ -23,16 +26,100 @@ class GameMap:
             list -- tile grid
         """
         # Initialize the WxH tile grid with non-blocking tiles
-        tiles = [[Tile(False) for y in range(self.height)] for x in range(self.width)]
-
-        tiles[30][22].blocked = True
-        tiles[30][22].block_sight = True
-        tiles[31][22].blocked = True
-        tiles[31][22].block_sight = True
-        tiles[32][22].blocked = True
-        tiles[32][22].block_sight = True
+        tiles = [[Tile(True) for y in range(self.height)] for x in range(self.width)]
 
         return tiles
+
+    def make_map(
+        self, max_rooms: int, room_min_size: int, room_max_size: int, player: object,
+    ):
+        """Create a map spawning random rooms as much as possible
+        
+        Arguments:
+            max_rooms {int} -- maximum number of rooms
+            room_min_size {int} -- minimum size for a room
+            room_max_size {int} -- maximum size for a room
+            player {object} -- Player entity
+        """
+        rooms = []
+        num_rooms = 0
+
+        for _ in range(max_rooms):
+            # random width and height
+            w = randint(room_min_size, room_max_size)
+            h = randint(room_min_size, room_max_size)
+            # Get a random position respecting boundaries
+            x = randint(0, self.width - w - 1)
+            y = randint(0, self.height - h - 1)
+
+            # Create a random room
+            new_room = Room(x, y, w, h)
+            # If it intersects any other room, skip
+            for other_room in rooms:
+                if new_room.intersect(other_room):
+                    break
+            else:
+                # No intersections found
+                self.create_room(new_room)
+                # Get the center of the room
+                (center_x, center_y) = new_room.center()
+                if num_rooms == 0:
+                    # this is the first room, spawn the player
+                    player.x = center_x
+                    player.y = center_y
+                else:
+                    # after the first room
+                    # connect it to the previous room with a tunnel
+
+                    # center coordinates of previous room
+                    (prev_x, prev_y) = rooms[num_rooms - 1].center()
+                    # flip a coin (random number that is either 0 or 1)
+                    if randint(0, 1) == 1:
+                        # first move horizontally, then vertically
+                        self.create_h_tunnel(prev_x, center_x, prev_y)
+                        self.create_v_tunnel(prev_y, center_y, center_x)
+                    else:
+                        # first move vertically, then horizontally
+                        self.create_v_tunnel(prev_y, center_y, prev_x)
+                        self.create_h_tunnel(prev_x, center_x, center_y)
+                # save the created room to a list
+                rooms.append(new_room)
+                num_rooms += 1
+
+    def create_room(self, room: Room):
+        """Carve out a room in the GameMap
+        
+        Arguments:
+            room {Room} -- room object containing dimensions for the room
+        """
+        for x in range(room.x1 + 1, room.x2):
+            for y in range(room.y1 + 1, room.y2):
+                self.tiles[x][y].blocked = False
+                self.tiles[x][y].block_sight = False
+
+    def create_h_tunnel(self, x1: int, x2: int, y: int):
+        """Define a horizontal tunnel
+        
+        Arguments:
+            x1 {int} -- start of the tunnel
+            x2 {int} -- end of the tunnel
+            y {int} -- y position related to gamemap
+        """
+        for x in range(min(x1, x2), max(x1, x2) + 1):
+            self.tiles[x][y].blocked = False
+            self.tiles[x][y].block_sight = False
+
+    def create_v_tunnel(self, y1: int, y2: int, x: int):
+        """Define a vertical tunnel
+        
+        Arguments:
+            y1 {int} -- start of the tunnel
+            y2 {int} -- end of the tunnel
+            x {int} -- x position related to gamemap
+        """
+        for y in range(min(y1, y2), max(y1, y2) + 1):
+            self.tiles[x][y].blocked = False
+            self.tiles[x][y].block_sight = False
 
     def is_blocked(self, x: int, y: int) -> bool:
         """Checks if given map position is blocked
@@ -43,5 +130,5 @@ class GameMap:
         
         Returns:
             bool -- Blocking state of target tile
-        """        
+        """
         return self.tiles[x][y].blocked
