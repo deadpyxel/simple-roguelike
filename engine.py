@@ -1,4 +1,5 @@
 import tcod as libtcod
+from input_handlers import handle_keys
 
 
 def main():
@@ -31,10 +32,24 @@ def main():
         libtcod.console_put_char(0, player_x, player_y, "@", libtcod.BKGND_NONE)
         libtcod.console_flush()
 
-        key = libtcod.console_check_for_keypress()
-        # Exit on ESC
-        if key.vk == libtcod.KEY_ESCAPE:
+        # Capture action for given input
+        action = handle_keys(key)
+        # Map values for each input
+        move = action.get("move")
+        _exit = action.get("exit")
+        fullscreen = action.get("fullscreen")
+
+        # Handle movement
+        if move:
+            dx, dy = move
+            player_x += dx
+            player_y += dy
+        # Handle game exit
+        if _exit:
             return True
+        # toggle fullscreen
+        if fullscreen:
+            libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
 
 
 if __name__ == "__main__":
