@@ -1,5 +1,8 @@
 from random import randint
 
+import tcod as libtcod
+
+from entity import Entity
 from map_objects.tile import Tile
 from map_objects.room import Room
 
@@ -120,6 +123,27 @@ class GameMap:
         for y in range(min(y1, y2), max(y1, y2) + 1):
             self.tiles[x][y].blocked = False
             self.tiles[x][y].block_sight = False
+
+    def place_entities(self, room: Room, entities: list, max_monsters_per_room: int):
+        # Get a random number of monsters for the room
+        num_monsters = randint(0, max_monsters_per_room)
+
+        for _ in range(num_monsters):
+            # Choose random location for spawn
+            x = randint(room.x1 + 1, room.x2 - 1)
+            y = randint(room.y1 + 1, room.y2 - 1)
+
+            # Check if there's already an entity there
+            if not any(
+                [entity for entity in entities if entity.x == x and entity.y == y]
+            ):
+                # 80% of chance to spawn an Orc, else a Troll
+                if randint(0, 100) < 80:
+                    monster = Entity(x, y, "o", libtcod.desaturated_green)
+                else:
+                    monster = Entity(x, y, "T", libtcod.darker_green)
+
+                entities.append(monster)
 
     def is_blocked(self, x: int, y: int) -> bool:
         """Checks if given map position is blocked
