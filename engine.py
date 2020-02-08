@@ -1,6 +1,6 @@
 import tcod as libtcod
 
-from entity import Entity
+from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from input_handlers import handle_keys
 from map_objects.game_map import GameMap
@@ -23,6 +23,8 @@ def main():
     fov_light_walls = True  # light up walls we can see
     fov_radius = 10  # radius of view
     fov_recompute = True  # flag to trigger FoV computations
+    # Monster spawning settings
+    max_monsters_per_room = 3
     # Define colors to be used in FoV
     colors = {
         "dark_wall": libtcod.Color(0, 0, 100),
@@ -36,21 +38,19 @@ def main():
     )
 
     # Player initialization
-    player = Entity(
-        x=int(screen_width / 2), y=int(screen_height / 2), char="@", color=libtcod.white
-    )
-    # NPC initializatio
-    npc = Entity(
-        x=int(screen_width / 2 - 5),
-        y=int(screen_height / 2),
-        char="@",
-        color=libtcod.yellow,
-    )
-    # Entity list
-    entities = [player, npc]
+    player = Entity(0, 0, "@", libtcod.white, "Player", blocks=True)
+    # World entity list
+    entities = [player]
     # Map object
     game_map = GameMap(map_width, map_height)
-    game_map.make_map(max_rooms, room_min_size, room_max_size, player)
+    game_map.make_map(
+        max_rooms,
+        room_min_size,
+        room_max_size,
+        player,
+        entities,
+        max_monsters_per_room=max_monsters_per_room,
+    )
 
     # Fov map object
     fov_map = initialize_fov(game_map)
@@ -103,9 +103,14 @@ def main():
         # Handle movement
         if move:
             dx, dy = move
-            if not game_map.is_blocked(player.x + dx, player.y + dy):
-                player.move(dx, dy)
-                fov_recompute = True
+            dest_x, dest_y = player.x + dx, player.y + dy
+            if not game_map.is_blocked(dest_x, dest_y):
+                target = get_blocking_entities_at_location(entities, dest_x, dest_y)
+                if target:
+                    print(f"You kick {target.name} in the butt! he is annoyed")
+                else:
+                    player.move(dx, dy)
+                    fov_recompute = True
         # Handle game exit
         if _exit:
             return True

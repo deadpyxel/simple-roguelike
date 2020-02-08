@@ -1,5 +1,8 @@
 from random import randint
 
+import tcod as libtcod
+
+from entity import Entity
 from map_objects.tile import Tile
 from map_objects.room import Room
 
@@ -31,7 +34,13 @@ class GameMap:
         return tiles
 
     def make_map(
-        self, max_rooms: int, room_min_size: int, room_max_size: int, player: object,
+        self,
+        max_rooms: int,
+        room_min_size: int,
+        room_max_size: int,
+        player: object,
+        entities: list,
+        max_monsters_per_room: int = 5,
     ):
         """Create a map spawning random rooms as much as possible
         
@@ -40,6 +49,8 @@ class GameMap:
             room_min_size {int} -- minimum size for a room
             room_max_size {int} -- maximum size for a room
             player {object} -- Player entity
+            entities {list} -- World entities list
+            max_monsters_per_room {int} -- Limit of monsters per room (Default: 5)
         """
         rooms = []
         num_rooms = 0
@@ -82,6 +93,8 @@ class GameMap:
                         # first move vertically, then horizontally
                         self.create_v_tunnel(prev_y, center_y, prev_x)
                         self.create_h_tunnel(prev_x, center_x, center_y)
+                # Spawn entities in this room
+                self.place_entities(new_room, entities, max_monsters_per_room)
                 # save the created room to a list
                 rooms.append(new_room)
                 num_rooms += 1
@@ -120,6 +133,27 @@ class GameMap:
         for y in range(min(y1, y2), max(y1, y2) + 1):
             self.tiles[x][y].blocked = False
             self.tiles[x][y].block_sight = False
+
+    def place_entities(self, room: Room, entities: list, max_monsters_per_room: int):
+        # Get a random number of monsters for the room
+        num_monsters = randint(0, max_monsters_per_room)
+
+        for _ in range(num_monsters):
+            # Choose random location for spawn
+            x = randint(room.x1 + 1, room.x2 - 1)
+            y = randint(room.y1 + 1, room.y2 - 1)
+
+            # Check if there's already an entity there
+            if not any(
+                [entity for entity in entities if entity.x == x and entity.y == y]
+            ):
+                # 80% of chance to spawn an Orc, else a Troll
+                if randint(0, 100) < 80:
+                    monster = Entity(x, y, "o", libtcod.desaturated_green, 'Orc', blocks=True)
+                else:
+                    monster = Entity(x, y, "T", libtcod.darker_green, 'Troll', blocks=True)
+
+                entities.append(monster)
 
     def is_blocked(self, x: int, y: int) -> bool:
         """Checks if given map position is blocked
