@@ -38,7 +38,7 @@ def main():
     entities = [player, npc]
     # Map object
     game_map = GameMap(map_width, map_height)
-    game_map.make_map(max_rooms, room_min_size, room_min_size, player)
+    game_map.make_map(max_rooms, room_min_size, room_max_size, player)
 
     # Font settings
     libtcod.console_set_custom_font(
