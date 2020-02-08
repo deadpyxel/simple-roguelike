@@ -9,6 +9,14 @@ def main():
     # Screen size
     screen_width = 80
     screen_height = 50
+    # Map size
+    map_width = 80
+    map_height = 45
+    # Define colors to be used in FoV
+    colors = {
+        "dark_wall": libtcod.Color(0, 0, 100),
+        "dark_ground": libtcod.Color(50, 50, 150),
+    }
 
     # Player initialization
     player = Entity(
@@ -23,6 +31,8 @@ def main():
     )
     # Entity list
     entities = [player, npc]
+    # Map object
+    game_map = GameMap(map_width, map_height)
 
     # Font settings
     libtcod.console_set_custom_font(
@@ -44,7 +54,7 @@ def main():
         # Capture input events
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS, key, mouse)
         # Initial screen config
-        render_all(console, entities, screen_width, screen_height)
+        render_all(console, entities, game_map, screen_width, screen_height, colors)
         libtcod.console_flush()
 
         # Clear all entities
