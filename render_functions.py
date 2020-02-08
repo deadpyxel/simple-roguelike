@@ -50,7 +50,7 @@ def render_all(
 
     # Draw all entities in the list
     for entity in entities:
-        draw_entity(con, entity)
+        draw_entity(con, entity, fov_map)
 
     libtcod.console_blit(con, 0, 0, screen_width, screen_height, 0, 0, 0)
 
@@ -60,9 +60,20 @@ def clear_all(con: libtcod.console.Console, entities: list):
         clear_entity(con, entity)
 
 
-def draw_entity(con: libtcod.console.Console, entity: object):
-    libtcod.console_set_default_foreground(con, entity.color)
-    libtcod.console_put_char(con, entity.x, entity.y, entity.char, libtcod.BKGND_NONE)
+def draw_entity(con: libtcod.console.Console, entity: object, fov_map: libtcod.map.Map):
+    """Render given entity in the map
+    
+    Arguments:
+        con {libtcod.console.Console} -- Target console
+        entity {object} -- target entity to rendering
+        fov_map {libtcod.map.Map} -- FoV map to determine visibility
+    """ 
+    # Checks if given entity is visible for player   
+    if libtcod.map_is_in_fov(fov_map, entity.x, entity.y):
+        libtcod.console_set_default_foreground(con, entity.color)
+        libtcod.console_put_char(
+            con, entity.x, entity.y, entity.char, libtcod.BKGND_NONE
+        )
 
 
 def clear_entity(con: libtcod.console.Console, entity: object):
