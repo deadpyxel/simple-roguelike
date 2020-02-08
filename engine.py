@@ -2,6 +2,7 @@ import tcod as libtcod
 
 from entity import Entity
 from input_handlers import handle_keys
+from render_functions import clear_all, render_all
 
 
 def main():
@@ -32,7 +33,7 @@ def main():
     libtcod.console_init_root(screen_width, screen_height, "Testing libtcod...", False)
 
     # Console object
-    console = libtcod.console_new(screen_width, screen_height)
+    console = libtcod.console.Console(screen_width, screen_height)
 
     # input objects
     key = libtcod.Key()
@@ -43,12 +44,11 @@ def main():
         # Capture input events
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS, key, mouse)
         # Initial screen config
-        libtcod.console_set_default_foreground(console, libtcod.white)
-        libtcod.console_put_char(console, player.x, player.y, "@", libtcod.BKGND_NONE)
-        libtcod.console_blit(console, 0, 0, screen_width, screen_height, 0, 0, 0)
+        render_all(console, entities, screen_width, screen_height)
         libtcod.console_flush()
 
-        libtcod.console_put_char(console, player.x, player.y, " ", libtcod.BKGND_NONE)
+        # Clear all entities
+        clear_all(console, entities)
 
         # Capture action for given input
         action = handle_keys(key)
