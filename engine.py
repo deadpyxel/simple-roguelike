@@ -19,6 +19,9 @@ def main():
     # Creating screen
     libtcod.console_init_root(screen_width, screen_height, "Testing libtcod...", False)
 
+    # Console object
+    console = libtcod.console_new(screen_width, screen_height)
+
     # input objects
     key = libtcod.Key()
     mouse = libtcod.Mouse()
@@ -28,9 +31,12 @@ def main():
         # Capture input events
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS, key, mouse)
         # Initial screen config
-        libtcod.console_set_default_foreground(0, libtcod.white)
-        libtcod.console_put_char(0, player_x, player_y, "@", libtcod.BKGND_NONE)
+        libtcod.console_set_default_foreground(console, libtcod.white)
+        libtcod.console_put_char(console, player_x, player_y, "@", libtcod.BKGND_NONE)
+        libtcod.console_blit(console, 0, 0, screen_width, screen_height, 0, 0, 0)
         libtcod.console_flush()
+
+        libtcod.console_put_char(console, player_x, player_y, ' ', libtcod.BKGND_NONE)
 
         # Capture action for given input
         action = handle_keys(key)
