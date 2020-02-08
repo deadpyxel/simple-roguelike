@@ -1,6 +1,6 @@
 import tcod as libtcod
 
-from entity import Entity
+from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from input_handlers import handle_keys
 from map_objects.game_map import GameMap
@@ -38,7 +38,7 @@ def main():
     )
 
     # Player initialization
-    player = Entity(0, 0, "@", libtcod.white)
+    player = Entity(0, 0, "@", libtcod.white, "Player", blocks=True)
     # World entity list
     entities = [player]
     # Map object
@@ -103,9 +103,14 @@ def main():
         # Handle movement
         if move:
             dx, dy = move
-            if not game_map.is_blocked(player.x + dx, player.y + dy):
-                player.move(dx, dy)
-                fov_recompute = True
+            dest_x, dest_y = player.x + dx, player.y + dy
+            if not game_map.is_blocked(dest_x, dest_y):
+                target = get_blocking_entities_at_location(entities, dest_x, dest_y)
+                if target:
+                    print(f"You kick {target.name} in the butt! he is annoyed")
+                else:
+                    player.move(dx, dy)
+                    fov_recompute = True
         # Handle game exit
         if _exit:
             return True
