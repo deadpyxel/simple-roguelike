@@ -34,6 +34,7 @@ def main():
     entities = [player, npc]
     # Map object
     game_map = GameMap(map_width, map_height)
+    game_map.make_map()
 
     # Font settings
     libtcod.console_set_custom_font(
