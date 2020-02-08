@@ -1,3 +1,5 @@
+from random import randint
+
 from map_objects.tile import Tile
 from map_objects.room import Room
 
@@ -28,15 +30,45 @@ class GameMap:
 
         return tiles
 
-    def make_map(self):
-        # Define room objects
-        room1 = Room(x=20, y=15, w=10, h=15)
-        room2 = Room(x=35, y=15, w=10, h=15)
+    def make_map(
+        self, max_rooms: int, room_min_size: int, room_max_size: int, player: object,
+    ):
+        """Create a map spawning random rooms as much as possible
+        
+        Arguments:
+            max_rooms {int} -- maximum number of rooms
+            room_min_size {int} -- minimum size for a room
+            room_max_size {int} -- maximum size for a room
+            player {object} -- Player entity
+        """
+        rooms = []
+        num_rooms = 0
 
-        # Hand made dungeon
-        self.create_room(room1)
-        self.create_room(room2)
-        self.create_h_tunnel(25, 40, 23)
+        for r in range(max_rooms):
+            # random width and height
+            w = randint(room_min_size, room_max_size)
+            h = randint(room_min_size, room_max_size)
+            # Get a random position respecting boundaries
+            x = randint(0, self.width - w - 1)
+            y = randint(0, self.height - h - 1)
+
+            # Create a random room
+            new_room = Room(x, y, w, h)
+            # If it intersects any other room, skip
+            for other_room in rooms:
+                if new_room.intersect(other_room):
+                    break
+            else:
+                # No intersections found
+                self.create_room(new_room)
+                # Get the center of the room
+                (center_x, center_y) = new_room.center()
+                if num_rooms == 0:
+                    # this is the first room, spawn the player
+                    player.x = center_x
+                    player.y = center_y
+                rooms.append(new_room)
+                num_rooms += 1
 
     def create_room(self, room: Room):
         """Carve out a room in the GameMap
