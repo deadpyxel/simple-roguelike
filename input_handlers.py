@@ -2,6 +2,14 @@ import tcod as libtcod
 
 
 def handle_keys(key: libtcod.Key()) -> dict:
+    """Handler for any keypress
+    
+    Arguments:
+        key {libtcod.Key} -- object containing keypress data
+    
+    Returns:
+        dict -- dictionary describing action for input
+    """    
     # Movement keys
     if key.vk == libtcod.KEY_UP:
         return {"move": (0, -1)}
