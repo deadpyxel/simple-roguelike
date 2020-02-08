@@ -38,7 +38,9 @@ def render_all(
                         libtcod.console_set_char_background(
                             con, x, y, colors.get("light_ground"), libtcod.BKGND_SET
                         )
-                else:
+                    game_map.tiles[x][y].explored = True
+                # Else, checks if we have explored it yet
+                elif game_map.tiles[x][y].explored:
                     if wall:
                         libtcod.console_set_char_background(
                             con, x, y, colors.get("dark_wall"), libtcod.BKGND_SET
@@ -67,8 +69,8 @@ def draw_entity(con: libtcod.console.Console, entity: object, fov_map: libtcod.m
         con {libtcod.console.Console} -- Target console
         entity {object} -- target entity to rendering
         fov_map {libtcod.map.Map} -- FoV map to determine visibility
-    """ 
-    # Checks if given entity is visible for player   
+    """
+    # Checks if given entity is visible for player
     if libtcod.map_is_in_fov(fov_map, entity.x, entity.y):
         libtcod.console_set_default_foreground(con, entity.color)
         libtcod.console_put_char(
