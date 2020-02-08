@@ -1,6 +1,7 @@
 import tcod as libtcod
 
 from entity import Entity
+from fov_functions import initialize_fov
 from input_handlers import handle_keys
 from map_objects.game_map import GameMap
 from render_functions import clear_all, render_all
@@ -17,11 +18,22 @@ def main():
     max_rooms = 30
     room_min_size = 6
     room_max_size = 10
+    # FoV configurations
+    fov_algorithm = 0  # use defualt algorithm
+    fov_light_walls = True  # light up walls we can see
+    fov_radius = 10  # radius of view
+    fov_recompute = True  # flag to trigger FoV computations
     # Define colors to be used in FoV
     colors = {
         "dark_wall": libtcod.Color(0, 0, 100),
         "dark_ground": libtcod.Color(50, 50, 150),
+        "light_wall": libtcod.Color(130, 110, 50),
+        "light_ground": libtcod.Color(200, 180, 50),
     }
+    # Font settings
+    libtcod.console_set_custom_font(
+        "arial10x10.png", libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD
+    )
 
     # Player initialization
     player = Entity(
@@ -40,10 +52,8 @@ def main():
     game_map = GameMap(map_width, map_height)
     game_map.make_map(max_rooms, room_min_size, room_max_size, player)
 
-    # Font settings
-    libtcod.console_set_custom_font(
-        "arial10x10.png", libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD
-    )
+    # Fov map object
+    fov_map = initialize_fov(game_map)
 
     # Creating screen
     libtcod.console_init_root(screen_width, screen_height, "Testing libtcod...", False)
@@ -78,6 +88,7 @@ def main():
             dx, dy = move
             if not game_map.is_blocked(player.x + dx, player.y + dy):
                 player.move(dx, dy)
+                fov_recompute = True
         # Handle game exit
         if _exit:
             return True
