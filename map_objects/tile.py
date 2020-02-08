@@ -18,4 +18,5 @@ class Tile:
         if block_sight is None:
             block_sight = blocked
 
-        self.block_sight = block_sight
+        self.block_sight = block_sight  # flag if tile blocks sight of other tiles
+        self.explored = False  # has the player been in this tile yet
