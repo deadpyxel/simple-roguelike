@@ -13,6 +13,10 @@ def main():
     # Map size
     map_width = 80
     map_height = 45
+    # Room definitions
+    max_rooms = 30
+    room_min_size = 6
+    room_max_size = 10
     # Define colors to be used in FoV
     colors = {
         "dark_wall": libtcod.Color(0, 0, 100),
@@ -34,7 +38,7 @@ def main():
     entities = [player, npc]
     # Map object
     game_map = GameMap(map_width, map_height)
-    game_map.make_map()
+    game_map.make_map(max_rooms, room_min_size, room_min_size, player)
 
     # Font settings
     libtcod.console_set_custom_font(
