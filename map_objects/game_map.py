@@ -34,7 +34,13 @@ class GameMap:
         return tiles
 
     def make_map(
-        self, max_rooms: int, room_min_size: int, room_max_size: int, player: object,
+        self,
+        max_rooms: int,
+        room_min_size: int,
+        room_max_size: int,
+        player: object,
+        entities: list,
+        max_monsters_per_room: int = 5,
     ):
         """Create a map spawning random rooms as much as possible
         
@@ -43,6 +49,8 @@ class GameMap:
             room_min_size {int} -- minimum size for a room
             room_max_size {int} -- maximum size for a room
             player {object} -- Player entity
+            entities {list} -- World entities list
+            max_monsters_per_room {int} -- Limit of monsters per room (Default: 5)
         """
         rooms = []
         num_rooms = 0
@@ -85,6 +93,8 @@ class GameMap:
                         # first move vertically, then horizontally
                         self.create_v_tunnel(prev_y, center_y, prev_x)
                         self.create_h_tunnel(prev_x, center_x, center_y)
+                # Spawn entities in this room
+                self.place_entities(new_room, entities, max_monsters_per_room)
                 # save the created room to a list
                 rooms.append(new_room)
                 num_rooms += 1
