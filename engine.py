@@ -1,7 +1,7 @@
 import tcod as libtcod
 
 from entity import Entity
-from fov_functions import initialize_fov
+from fov_functions import initialize_fov, recompute_fov
 from input_handlers import handle_keys
 from map_objects.game_map import GameMap
 from render_functions import clear_all, render_all
@@ -56,7 +56,9 @@ def main():
     fov_map = initialize_fov(game_map)
 
     # Creating screen
-    libtcod.console_init_root(screen_width, screen_height, "Testing libtcod...", False)
+    libtcod.console_init_root(
+        screen_width, screen_height, "Roguelike using libtcod", False
+    )
 
     # Console object
     console = libtcod.console.Console(screen_width, screen_height)
@@ -69,8 +71,23 @@ def main():
     while not libtcod.console_is_window_closed():
         # Capture input events
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS, key, mouse)
+        # Trigger FoV calculation
+        if fov_recompute == True:
+            recompute_fov(
+                fov_map, player.x, player.y, fov_radius, fov_light_walls, fov_algorithm
+            )
         # Initial screen config
-        render_all(console, entities, game_map, screen_width, screen_height, colors)
+        render_all(
+            con=console,
+            entities=entities,
+            game_map=game_map,
+            fov_map=fov_map,
+            fov_recompute=fov_recompute,
+            screen_width=screen_width,
+            screen_height=screen_height,
+            colors=colors,
+        )
+        fov_recompute = False
         libtcod.console_flush()
 
         # Clear all entities
