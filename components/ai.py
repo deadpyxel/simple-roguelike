@@ -5,9 +5,21 @@ class BasicMonster:
     """Basic Monster behaviour component
     """
 
-    def take_turn(self, target, fov_map, game_map, entities):
-        """Handle turn
+    def take_turn(
+        self, target: object, fov_map: object, game_map: object, entities: list
+    ) -> list:
+        """Turn action handling
+        
+        Arguments:
+            target {object} -- target entity
+            fov_map {object} -- FoV map
+            game_map {object} -- GameMap object
+            entities {list} -- List of entities in the map
+        
+        Returns:
+            [list] -- resulting action log
         """
+        results = []
         monster = self.owner
         # If the monster is in the FoV
         if libtcod.map_is_in_fov(fov_map, monster.x, monster.y):
@@ -16,5 +28,8 @@ class BasicMonster:
                 monster.move_astar(target, game_map, entities)
             # Else, attack
             elif target.fighter.hp > 0:
-                monster.fighter.attack(target)
+                attack_results = monster.fighter.attack(target)
+                results.extend(attack_results)
+
+        return results
 
