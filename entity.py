@@ -3,7 +3,15 @@ class Entity:
     """
 
     def __init__(
-        self, x: int, y: int, char: str, color: object, name: str, blocks: bool = False
+        self,
+        x: int,
+        y: int,
+        char: str,
+        color: object,
+        name: str,
+        blocks: bool = False,
+        fighter: object = None,
+        ai: object = None,
     ):
         """Entity initializer
         
@@ -13,7 +21,10 @@ class Entity:
             char {str} -- Character to represent entity
             color {object} -- Color objet used to color character on screen 
             name {str} -- Name of the entity
-            blocks {bool} -- Flag controlling entity collision
+        Keyword Arguments:
+            blocks {bool} -- Block behaviour flag (default: {False})
+            fighter {object} -- fighting component (default: {None})
+            ai {object} -- AI component (default: {None})
         """
         self.x = x
         self.y = y
@@ -21,6 +32,14 @@ class Entity:
         self.color = color
         self.name = name
         self.blocks = blocks
+        self.fighter = fighter
+        self.ai = ai
+
+        # If components are present, set this entity as owner
+        if self.fighter:
+            self.fighter.owner = self
+        if self.ai:
+            self.ai.owner = self
 
     def move(self, dx: int, dy: int):
         """Move entity by given amount
