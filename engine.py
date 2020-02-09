@@ -1,5 +1,7 @@
 import tcod as libtcod
 
+from components.fighter import Fighter
+from death_handlers import kill_monster, kill_player
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
@@ -39,7 +41,12 @@ def main():
     )
 
     # Player initialization
-    player = Entity(0, 0, "@", libtcod.white, "Player", blocks=True)
+    fighter_component = Fighter(
+        hp=30, defense=2, power=5
+    )  # define a fighter component for the player
+    player = Entity(
+        0, 0, "@", libtcod.white, "Player", blocks=True, fighter=fighter_component
+    )
     # World entity list
     entities = [player]
     # Map object
@@ -82,6 +89,7 @@ def main():
         render_all(
             con=console,
             entities=entities,
+            player=player,
             game_map=game_map,
             fov_map=fov_map,
             fov_recompute=fov_recompute,
@@ -101,6 +109,7 @@ def main():
         move = action.get("move")
         _exit = action.get("exit")
         fullscreen = action.get("fullscreen")
+        player_turn_results = []
 
         # Handle movement. Check if this is players turn
         if move and game_state == GameStates.PLAYERS_TURN:
@@ -109,7 +118,8 @@ def main():
             if not game_map.is_blocked(dest_x, dest_y):
                 target = get_blocking_entities_at_location(entities, dest_x, dest_y)
                 if target:
-                    print(f"You kick {target.name} in the butt! he is annoyed")
+                    attack_results = player.fighter.attack(target)
+                    player_turn_results.extend(attack_results)
                 else:
                     player.move(dx, dy)
                     fov_recompute = True
@@ -122,12 +132,47 @@ def main():
         if fullscreen:
             libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
 
+        # Cycle through players action log
+        for player_turn_result in player_turn_results:
+            message = player_turn_result.get("message")
+            dead_entity = player_turn_result.get("dead")
+
+            if message:
+                print(message)
+            if dead_entity:
+                if dead_entity == player:
+                    message, game_state = kill_player(player)
+                else:
+                    message = kill_monster(dead_entity)
+                print(message)
+
         # After all input is handle, check if this is enemies turn
         if game_state == GameStates.ENEMY_TURN:
             for entity in entities:
-                if entity != player:
-                    print(f"The {entity.name} ponders the meaning of life...")
-            game_state = GameStates.PLAYERS_TURN
+                if entity.ai:
+                    enemy_turn_results = entity.ai.take_turn(
+                        player, fov_map, game_map, entities
+                    )
+
+                    # Cycle through players action log
+                    for enemy_turn_result in enemy_turn_results:
+                        message = enemy_turn_result.get("message")
+                        dead_entity = enemy_turn_result.get("dead")
+
+                        if message:
+                            print(message)
+                        if dead_entity:
+                            if dead_entity == player:
+                                message, game_state = kill_player(player)
+                            else:
+                                message = kill_monster(dead_entity)
+                            print(message)
+                    # If player has died, no need to continue with enemies
+                    if game_state == GameStates.PLAYER_DEAD:
+                        break
+
+            else:
+                game_state = GameStates.PLAYERS_TURN
 
 
 if __name__ == "__main__":
