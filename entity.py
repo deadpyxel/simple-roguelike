@@ -2,6 +2,8 @@ import math
 
 import tcod as libtcod
 
+from render_functions import RenderOrder
+
 
 class Entity:
     """A generic class used to represent player, npcs, enemies
@@ -15,6 +17,7 @@ class Entity:
         color: object,
         name: str,
         blocks: bool = False,
+        render_order = RenderOrder.CORPSE,
         fighter: object = None,
         ai: object = None,
     ):
@@ -28,6 +31,7 @@ class Entity:
             name {str} -- Name of the entity
         Keyword Arguments:
             blocks {bool} -- Block behaviour flag (default: {False})
+            render_order {Enum} -- Controls rendering priority (default: {RenderOrder.CORPSE})
             fighter {object} -- fighting component (default: {None})
             ai {object} -- AI component (default: {None})
         """
@@ -37,6 +41,7 @@ class Entity:
         self.color = color
         self.name = name
         self.blocks = blocks
+        self.render_order = render_order
         self.fighter = fighter
         self.ai = ai
 

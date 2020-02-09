@@ -7,6 +7,7 @@ from components.fighter import Fighter
 from entity import Entity
 from map_objects.tile import Tile
 from map_objects.room import Room
+from render_functions import RenderOrder
 
 
 class GameMap:
@@ -160,6 +161,7 @@ class GameMap:
                         libtcod.desaturated_green,
                         "Orc",
                         blocks=True,
+                        render_order=RenderOrder.ACTOR,
                         fighter=fighter_component,
                         ai=ai_component,
                     )
@@ -173,6 +175,7 @@ class GameMap:
                         libtcod.darker_green,
                         "Troll",
                         blocks=True,
+                        render_order=RenderOrder.ACTOR,
                         fighter=fighter_component,
                         ai=ai_component,
                     )
