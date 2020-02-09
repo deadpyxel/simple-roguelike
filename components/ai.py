@@ -13,7 +13,7 @@ class BasicMonster:
         if libtcod.map_is_in_fov(fov_map, monster.x, monster.y):
             # If the target is too far move towards it
             if monster.distance_to(target) >= 2:
-                monster.move_towards(target.x, target.y, game_map, entities)
+                monster.move_astar(target, game_map, entities)
             # Else, attack
             elif target.fighter.hp > 0:
                 print(f"The {monster.name} insults you! Your ego is damaged!")
