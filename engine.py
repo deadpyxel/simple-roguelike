@@ -115,7 +115,7 @@ def main():
             if not game_map.is_blocked(dest_x, dest_y):
                 target = get_blocking_entities_at_location(entities, dest_x, dest_y)
                 if target:
-                    print(f"You kick {target.name} in the butt! he is annoyed")
+                    player.fighter.attack(target)
                 else:
                     player.move(dx, dy)
                     fov_recompute = True

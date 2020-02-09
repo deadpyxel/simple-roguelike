@@ -16,5 +16,5 @@ class BasicMonster:
                 monster.move_astar(target, game_map, entities)
             # Else, attack
             elif target.fighter.hp > 0:
-                print(f"The {monster.name} insults you! Your ego is damaged!")
+                monster.fighter.attack(target)
 
