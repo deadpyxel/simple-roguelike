@@ -1,6 +1,7 @@
 import tcod as libtcod
 
 from components.fighter import Fighter
+from death_handlers import kill_monster, kill_player
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
@@ -138,23 +139,36 @@ def main():
             if message:
                 print(message)
             if dead_entity:
-                pass  # Placeholder
+                if dead_entity == player:
+                    message, game_state= kill_player(player)
+                else:
+                    message = kill_monster(dead_entity)
+                print(message)
 
         # After all input is handle, check if this is enemies turn
         if game_state == GameStates.ENEMY_TURN:
             for entity in entities:
                 if entity.ai:
-                    enemy_turn_results = entity.ai.take_turn(player, fov_map, game_map, entities)
+                    enemy_turn_results = entity.ai.take_turn(
+                        player, fov_map, game_map, entities
+                    )
 
                     # Cycle through players action log
                     for enemy_turn_result in enemy_turn_results:
-                        message = enemy_turn_result.get('message')
-                        dead_entity = enemy_turn_result.get('dead')
+                        message = enemy_turn_result.get("message")
+                        dead_entity = enemy_turn_result.get("dead")
 
                         if message:
                             print(message)
                         if dead_entity:
-                            pass
+                            if dead_entity == player:
+                                message, game_state = kill_player(player)
+                            else:
+                                message = kill_monster(dead_entity)
+                            print(message)
+                    # If player has died, no need to continue with enemies
+                    if game_state == GameStates.PLAYER_DEAD:
+                        break
 
             else:
                 game_state = GameStates.PLAYERS_TURN
