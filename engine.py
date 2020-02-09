@@ -131,8 +131,8 @@ def main():
         # After all input is handle, check if this is enemies turn
         if game_state == GameStates.ENEMY_TURN:
             for entity in entities:
-                if entity != player:
-                    print(f"The {entity.name} ponders the meaning of life...")
+                if entity.ai:
+                    entity.ai.take_turn()
             game_state = GameStates.PLAYERS_TURN
 
 
