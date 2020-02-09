@@ -122,6 +122,13 @@ def main():
         if fullscreen:
             libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
 
+        # After all input is handle, check if this is enemies turn
+        if game_state == GameStates.ENEMY_TURN:
+            for entity in entities:
+                if entity != player:
+                    print(f"The {entity.name} ponders the meaning of life...")
+            game_state = GameStates.PLAYERS_TURN
+
 
 if __name__ == "__main__":
     main()
