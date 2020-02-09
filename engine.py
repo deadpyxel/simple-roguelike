@@ -1,5 +1,6 @@
 import tcod as libtcod
 
+from components.fighter import Fighter
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
@@ -39,7 +40,12 @@ def main():
     )
 
     # Player initialization
-    player = Entity(0, 0, "@", libtcod.white, "Player", blocks=True)
+    fighter_component = Fighter(
+        hp=30, defense=2, power=5
+    )  # define a fighter component for the player
+    player = Entity(
+        0, 0, "@", libtcod.white, "Player", blocks=True, fighter=fighter_component
+    )
     # World entity list
     entities = [player]
     # Map object
