@@ -2,6 +2,7 @@ import tcod as libtcod
 
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
+from game_states import GameStates
 from input_handlers import handle_keys
 from map_objects.game_map import GameMap
 from render_functions import clear_all, render_all
@@ -51,9 +52,10 @@ def main():
         entities,
         max_monsters_per_room=max_monsters_per_room,
     )
-
     # Fov map object
     fov_map = initialize_fov(game_map)
+    # Game state
+    game_state = GameStates.PLAYERS_TURN
 
     # Creating screen
     libtcod.console_init_root(
@@ -100,8 +102,8 @@ def main():
         _exit = action.get("exit")
         fullscreen = action.get("fullscreen")
 
-        # Handle movement
-        if move:
+        # Handle movement. Check if this is players turn
+        if move and game_state == GameStates.PLAYERS_TURN:
             dx, dy = move
             dest_x, dest_y = player.x + dx, player.y + dy
             if not game_map.is_blocked(dest_x, dest_y):
@@ -111,12 +113,21 @@ def main():
                 else:
                     player.move(dx, dy)
                     fov_recompute = True
+                # Now it is enemies turn
+                game_state = GameStates.ENEMY_TURN
         # Handle game exit
         if _exit:
             return True
         # toggle fullscreen
         if fullscreen:
             libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
+
+        # After all input is handle, check if this is enemies turn
+        if game_state == GameStates.ENEMY_TURN:
+            for entity in entities:
+                if entity != player:
+                    print(f"The {entity.name} ponders the meaning of life...")
+            game_state = GameStates.PLAYERS_TURN
 
 
 if __name__ == "__main__":
