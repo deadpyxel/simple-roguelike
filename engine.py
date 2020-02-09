@@ -89,6 +89,7 @@ def main():
         render_all(
             con=console,
             entities=entities,
+            player=player,
             game_map=game_map,
             fov_map=fov_map,
             fov_recompute=fov_recompute,
@@ -140,7 +141,7 @@ def main():
                 print(message)
             if dead_entity:
                 if dead_entity == player:
-                    message, game_state= kill_player(player)
+                    message, game_state = kill_player(player)
                 else:
                     message = kill_monster(dead_entity)
                 print(message)

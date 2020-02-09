@@ -4,6 +4,7 @@ import tcod as libtcod
 def render_all(
     con: libtcod.console.Console,
     entities: list,
+    player: object,
     game_map: object,
     fov_map: libtcod.map.Map,
     fov_recompute: bool,
@@ -15,7 +16,8 @@ def render_all(
     
     Arguments:
         con {libtcod.console.Console} -- target console
-        entities {list} -- lsit of entities to be drawn
+        entities {list} -- list of entities to be drawn
+        player {object} -- player object
         game_map {object} -- GameMap object
         fov_map {libtcod.map.Map} -- FoV map (what we see)
         fov_recompute {bool} -- flag controlling FoV calculation
@@ -53,6 +55,16 @@ def render_all(
     # Draw all entities in the list
     for entity in entities:
         draw_entity(con, entity, fov_map)
+
+    libtcod.console_set_default_foreground(con, libtcod.white)
+    libtcod.console_print_ex(
+        con,
+        1,
+        screen_height - 2,
+        libtcod.BKGND_NONE,
+        libtcod.LEFT,
+        f"HP: {player.fighter.hp:02d}/{player.fighter.max_hp:02d}",
+    )
 
     libtcod.console_blit(con, 0, 0, screen_width, screen_height, 0, 0, 0)
 
