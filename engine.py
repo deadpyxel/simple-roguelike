@@ -14,9 +14,13 @@ def main():
     # Screen size
     screen_width = 80
     screen_height = 50
+    # UI settings
+    bar_width = 20
+    panel_height = 7
+    panel_y = screen_height - panel_height
     # Map size
     map_width = 80
-    map_height = 45
+    map_height = 43
     # Room definitions
     max_rooms = 30
     room_min_size = 6
@@ -45,7 +49,14 @@ def main():
         hp=30, defense=2, power=5
     )  # define a fighter component for the player
     player = Entity(
-        0, 0, "@", libtcod.white, "Player", blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component
+        0,
+        0,
+        "@",
+        libtcod.white,
+        "Player",
+        blocks=True,
+        render_order=RenderOrder.ACTOR,
+        fighter=fighter_component,
     )
     # World entity list
     entities = [player]
@@ -71,6 +82,8 @@ def main():
 
     # Console object
     console = libtcod.console.Console(screen_width, screen_height)
+    # Panel object
+    panel = libtcod.console.Console(screen_width, panel_height)
 
     # input objects
     key = libtcod.Key()
@@ -88,6 +101,7 @@ def main():
         # Initial screen config
         render_all(
             con=console,
+            panel=panel,
             entities=entities,
             player=player,
             game_map=game_map,
@@ -95,6 +109,9 @@ def main():
             fov_recompute=fov_recompute,
             screen_width=screen_width,
             screen_height=screen_height,
+            bar_width=bar_width,
+            panel_height=panel_height,
+            panel_y=panel_y,
             colors=colors,
         )
         fov_recompute = False
