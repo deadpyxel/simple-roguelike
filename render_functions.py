@@ -62,6 +62,7 @@ def render_all(
     game_map: object,
     fov_map: libtcod.map.Map,
     fov_recompute: bool,
+    message_log: object,
     screen_width: int,
     screen_height: int,
     bar_width: int,
@@ -79,6 +80,7 @@ def render_all(
         game_map {object} -- GameMap object
         fov_map {libtcod.map.Map} -- FoV map (what we see)
         fov_recompute {bool} -- flag controlling FoV calculation
+        message_log {MessageLog} -- Game message log
         screen_width {int} -- screen width
         screen_height {int} -- screen height
         bar_width {int} -- Desired bar width
@@ -122,6 +124,15 @@ def render_all(
 
     libtcod.console_set_default_background(panel, libtcod.black)
     libtcod.console_clear(panel)
+
+    # Print the game messages, one line at a time
+    y = 1
+    for message in message_log.messages:
+        libtcod.console_set_default_foreground(panel, message.color)
+        libtcod.console_print_ex(
+            panel, message_log.x, y, libtcod.BKGND_NONE, libtcod.LEFT, message.text
+        )
+        y += 1
 
     render_bar(
         panel,
