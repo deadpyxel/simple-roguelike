@@ -9,6 +9,31 @@ class RenderOrder(Enum):
     ACTOR = 3
 
 
+def get_names_under_mouse(mouse: object, entities: list, fov_map: object) -> list:
+    """Utility function to get names of entities under mouse cursor
+    
+    Arguments:
+        mouse {object} -- mouse pointer object
+        entities {list} -- lsit of entities in the map
+        fov_map {object} -- FoV map
+    
+    Returns:
+        list -- List of entities names
+    """
+    (x, y) = (mouse.cx, mouse.cy)
+
+    names = [
+        entity.name
+        for entity in entities
+        if entity.x == x
+        and entity.y == y
+        and libtcod.map_is_in_fov(fov_map, entity.x, entity.y)
+    ]
+    names = ", ".join(names)
+
+    return names.capitalize()
+
+
 def render_bar(
     panel: libtcod.console.Console,
     x: int,
@@ -68,6 +93,7 @@ def render_all(
     bar_width: int,
     panel_height: int,
     panel_y: int,
+    mouse: object,
     colors: dict,
 ):
     """Wrapper funtion to make libtcod calls rendering all entities
@@ -86,6 +112,7 @@ def render_all(
         bar_width {int} -- Desired bar width
         panel_height {int} -- UI panel height
         panel_y {int} -- y position for the UI panel
+        mouse {object} -- Mouse cursor object
         colors {dict} -- colors to be used for the map
     """
     if fov_recompute:
@@ -144,6 +171,16 @@ def render_all(
         player.fighter.max_hp,
         libtcod.light_red,
         libtcod.darker_red,
+    )
+
+    libtcod.console_set_default_foreground(panel, libtcod.light_gray)
+    libtcod.console_print_ex(
+        panel,
+        1,
+        0,
+        libtcod.BKGND_NONE,
+        libtcod.LEFT,
+        get_names_under_mouse(mouse, entities, fov_map),
     )
 
     libtcod.console_blit(panel, 0, 0, screen_width, panel_height, 0, 0, panel_y)
