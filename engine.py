@@ -5,6 +5,7 @@ from death_handlers import kill_monster, kill_player
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
+from game_messages import MessageLog
 from input_handlers import handle_keys
 from map_objects.game_map import GameMap
 from render_functions import clear_all, render_all, RenderOrder
@@ -18,6 +19,9 @@ def main():
     bar_width = 20
     panel_height = 7
     panel_y = screen_height - panel_height
+    message_x = bar_width + 2
+    message_width = screen_width - bar_width - 2
+    message_height = panel_height - 1
     # Map size
     map_width = 80
     map_height = 43
@@ -84,6 +88,8 @@ def main():
     console = libtcod.console.Console(screen_width, screen_height)
     # Panel object
     panel = libtcod.console.Console(screen_width, panel_height)
+    # Message Log object
+    message_log = MessageLog(message_x, message_width, message_height)
 
     # input objects
     key = libtcod.Key()
@@ -107,6 +113,7 @@ def main():
             game_map=game_map,
             fov_map=fov_map,
             fov_recompute=fov_recompute,
+            message_log=message_log,
             screen_width=screen_width,
             screen_height=screen_height,
             bar_width=bar_width,
@@ -155,13 +162,13 @@ def main():
             dead_entity = player_turn_result.get("dead")
 
             if message:
-                print(message)
+                message_log.add_message(message)
             if dead_entity:
                 if dead_entity == player:
                     message, game_state = kill_player(player)
                 else:
                     message = kill_monster(dead_entity)
-                print(message)
+                message_log.add_message(message)
 
         # After all input is handle, check if this is enemies turn
         if game_state == GameStates.ENEMY_TURN:
@@ -177,13 +184,13 @@ def main():
                         dead_entity = enemy_turn_result.get("dead")
 
                         if message:
-                            print(message)
+                            message_log.add_message(message)
                         if dead_entity:
                             if dead_entity == player:
                                 message, game_state = kill_player(player)
                             else:
                                 message = kill_monster(dead_entity)
-                            print(message)
+                            message_log.add_message(message)
                     # If player has died, no need to continue with enemies
                     if game_state == GameStates.PLAYER_DEAD:
                         break
