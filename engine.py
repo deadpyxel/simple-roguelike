@@ -1,6 +1,7 @@
 import tcod as libtcod
 
 from components.fighter import Fighter
+from components.inventory import Inventory
 from death_handlers import kill_monster, kill_player
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
@@ -52,6 +53,7 @@ def main():
     fighter_component = Fighter(
         hp=30, defense=2, power=5
     )  # define a fighter component for the player
+    inventory_component = Inventory(26) # Inventory component for the player
     player = Entity(
         0,
         0,
@@ -61,6 +63,7 @@ def main():
         blocks=True,
         render_order=RenderOrder.ACTOR,
         fighter=fighter_component,
+        inventory=inventory_component
     )
     # World entity list
     entities = [player]
@@ -132,8 +135,9 @@ def main():
 
         # Capture action for given input
         action = handle_keys(key)
-        # Map values for each input
+        # Map values for each action
         move = action.get("move")
+        pickup = action.get("pickup")
         _exit = action.get("exit")
         fullscreen = action.get("fullscreen")
         player_turn_results = []

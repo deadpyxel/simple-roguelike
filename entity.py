@@ -17,9 +17,11 @@ class Entity:
         color: object,
         name: str,
         blocks: bool = False,
-        render_order = RenderOrder.CORPSE,
+        render_order=RenderOrder.CORPSE,
         fighter: object = None,
         ai: object = None,
+        item: object = None,
+        inventory: object = None,
     ):
         """Entity initializer
         
@@ -34,6 +36,8 @@ class Entity:
             render_order {Enum} -- Controls rendering priority (default: {RenderOrder.CORPSE})
             fighter {object} -- fighting component (default: {None})
             ai {object} -- AI component (default: {None})
+            item {object} -- item component (default: {None})
+            inventory {object} -- inventory component (default: {None})
         """
         self.x = x
         self.y = y
@@ -44,12 +48,18 @@ class Entity:
         self.render_order = render_order
         self.fighter = fighter
         self.ai = ai
+        self.item = item
+        self.inventory = inventory
 
         # If components are present, set this entity as owner
         if self.fighter:
             self.fighter.owner = self
         if self.ai:
             self.ai.owner = self
+        if self.item:
+            self.item.owner = self
+        if self.inventory:
+            self.inventory.owner = self
 
     def move(self, dx: int, dy: int):
         """Move entity by given amount

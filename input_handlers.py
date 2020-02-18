@@ -29,6 +29,10 @@ def handle_keys(key: libtcod.Key()) -> dict:
     elif key_ch == "n":
         return {"move": (1, 1)}
 
+    # Item pickup action
+    if key_ch == "g":
+        return {"pickup": True}
+
     if key.vk == libtcod.KEY_ENTER and key.lalt:
         # Alt+Enter: toggle full screen
         return {"fullscreen": True}
