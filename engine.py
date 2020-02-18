@@ -98,7 +98,9 @@ def main():
     # Game loop
     while not libtcod.console_is_window_closed():
         # Capture input events
-        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS, key, mouse)
+        libtcod.sys_check_for_event(
+            libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse
+        )
         # Trigger FoV calculation
         if fov_recompute == True:
             recompute_fov(
@@ -119,6 +121,7 @@ def main():
             bar_width=bar_width,
             panel_height=panel_height,
             panel_y=panel_y,
+            mouse=mouse,
             colors=colors,
         )
         fov_recompute = False
