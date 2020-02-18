@@ -44,6 +44,7 @@ class GameMap:
         player: object,
         entities: list,
         max_monsters_per_room: int = 5,
+        max_items_per_room: int = 3,
     ):
         """Create a map spawning random rooms as much as possible
         
@@ -54,6 +55,7 @@ class GameMap:
             player {object} -- Player entity
             entities {list} -- World entities list
             max_monsters_per_room {int} -- Limit of monsters per room (Default: 5)
+            max_items_per_room {int} -- Limit of spawnable items per room (Default: 3)
         """
         rooms = []
         num_rooms = 0
@@ -97,7 +99,9 @@ class GameMap:
                         self.create_v_tunnel(prev_y, center_y, prev_x)
                         self.create_h_tunnel(prev_x, center_x, center_y)
                 # Spawn entities in this room
-                self.place_entities(new_room, entities, max_monsters_per_room)
+                self.place_entities(
+                    new_room, entities, max_monsters_per_room, max_items_per_room
+                )
                 # save the created room to a list
                 rooms.append(new_room)
                 num_rooms += 1
@@ -137,9 +141,16 @@ class GameMap:
             self.tiles[x][y].blocked = False
             self.tiles[x][y].block_sight = False
 
-    def place_entities(self, room: Room, entities: list, max_monsters_per_room: int):
+    def place_entities(
+        self,
+        room: Room,
+        entities: list,
+        max_monsters_per_room: int,
+        max_items_per_room: int,
+    ):
         # Get a random number of monsters for the room
         num_monsters = randint(0, max_monsters_per_room)
+        num_items = randint(0, max_items_per_room)
 
         for _ in range(num_monsters):
             # Choose random location for spawn
@@ -181,6 +192,24 @@ class GameMap:
                     )
 
                 entities.append(monster)
+
+        for _ in range(num_items):
+            x = randint(room.x1 + 1, room.x2 - 1)
+            y = randint(room.y1 + 1, room.y2 - 1)
+
+            if not any(
+                [entity for entity in entities if entity.x == x and entity.y == y]
+            ):
+                item = Entity(
+                    x,
+                    y,
+                    "!",
+                    libtcod.violet,
+                    "Healing Potion",
+                    render_order=RenderOrder.ITEM,
+                )
+
+                entities.append(item)
 
     def is_blocked(self, x: int, y: int) -> bool:
         """Checks if given map position is blocked
