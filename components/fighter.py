@@ -1,3 +1,8 @@
+import tcod as libtcod
+
+from game_messages import Message
+
+
 class Fighter:
     """Fighter component. defines fighting behaviour
     """
@@ -45,14 +50,18 @@ class Fighter:
         if damage > 0:
             results.append(
                 {
-                    "message": f"{self.owner.name} attacks {target.name} for {damage} hit points."
+                    "message": Message(
+                        f"{self.owner.name} attacks {target.name} for {damage} hit points."
+                    )
                 }
             )
             results.extend(target.fighter.take_damage(damage))
         else:
             results.append(
                 {
-                    "message": f"{self.owner.name.capitalize()} attacks {target.name} but does no damage."
+                    "message": Message(
+                        f"{self.owner.name.capitalize()} attacks {target.name} but does no damage."
+                    )
                 }
             )
 

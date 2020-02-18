@@ -5,6 +5,7 @@ from death_handlers import kill_monster, kill_player
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
+from game_messages import MessageLog
 from input_handlers import handle_keys
 from map_objects.game_map import GameMap
 from render_functions import clear_all, render_all, RenderOrder
@@ -14,9 +15,16 @@ def main():
     # Screen size
     screen_width = 80
     screen_height = 50
+    # UI settings
+    bar_width = 20
+    panel_height = 7
+    panel_y = screen_height - panel_height
+    message_x = bar_width + 2
+    message_width = screen_width - bar_width - 2
+    message_height = panel_height - 1
     # Map size
     map_width = 80
-    map_height = 45
+    map_height = 43
     # Room definitions
     max_rooms = 30
     room_min_size = 6
@@ -45,7 +53,14 @@ def main():
         hp=30, defense=2, power=5
     )  # define a fighter component for the player
     player = Entity(
-        0, 0, "@", libtcod.white, "Player", blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component
+        0,
+        0,
+        "@",
+        libtcod.white,
+        "Player",
+        blocks=True,
+        render_order=RenderOrder.ACTOR,
+        fighter=fighter_component,
     )
     # World entity list
     entities = [player]
@@ -71,6 +86,10 @@ def main():
 
     # Console object
     console = libtcod.console.Console(screen_width, screen_height)
+    # Panel object
+    panel = libtcod.console.Console(screen_width, panel_height)
+    # Message Log object
+    message_log = MessageLog(message_x, message_width, message_height)
 
     # input objects
     key = libtcod.Key()
@@ -79,7 +98,9 @@ def main():
     # Game loop
     while not libtcod.console_is_window_closed():
         # Capture input events
-        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS, key, mouse)
+        libtcod.sys_check_for_event(
+            libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse
+        )
         # Trigger FoV calculation
         if fov_recompute == True:
             recompute_fov(
@@ -88,13 +109,19 @@ def main():
         # Initial screen config
         render_all(
             con=console,
+            panel=panel,
             entities=entities,
             player=player,
             game_map=game_map,
             fov_map=fov_map,
             fov_recompute=fov_recompute,
+            message_log=message_log,
             screen_width=screen_width,
             screen_height=screen_height,
+            bar_width=bar_width,
+            panel_height=panel_height,
+            panel_y=panel_y,
+            mouse=mouse,
             colors=colors,
         )
         fov_recompute = False
@@ -138,13 +165,13 @@ def main():
             dead_entity = player_turn_result.get("dead")
 
             if message:
-                print(message)
+                message_log.add_message(message)
             if dead_entity:
                 if dead_entity == player:
                     message, game_state = kill_player(player)
                 else:
                     message = kill_monster(dead_entity)
-                print(message)
+                message_log.add_message(message)
 
         # After all input is handle, check if this is enemies turn
         if game_state == GameStates.ENEMY_TURN:
@@ -160,13 +187,13 @@ def main():
                         dead_entity = enemy_turn_result.get("dead")
 
                         if message:
-                            print(message)
+                            message_log.add_message(message)
                         if dead_entity:
                             if dead_entity == player:
                                 message, game_state = kill_player(player)
                             else:
                                 message = kill_monster(dead_entity)
-                            print(message)
+                            message_log.add_message(message)
                     # If player has died, no need to continue with enemies
                     if game_state == GameStates.PLAYER_DEAD:
                         break

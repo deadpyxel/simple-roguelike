@@ -9,28 +9,110 @@ class RenderOrder(Enum):
     ACTOR = 3
 
 
+def get_names_under_mouse(mouse: object, entities: list, fov_map: object) -> list:
+    """Utility function to get names of entities under mouse cursor
+    
+    Arguments:
+        mouse {object} -- mouse pointer object
+        entities {list} -- lsit of entities in the map
+        fov_map {object} -- FoV map
+    
+    Returns:
+        list -- List of entities names
+    """
+    (x, y) = (mouse.cx, mouse.cy)
+
+    names = [
+        entity.name
+        for entity in entities
+        if entity.x == x
+        and entity.y == y
+        and libtcod.map_is_in_fov(fov_map, entity.x, entity.y)
+    ]
+    names = ", ".join(names)
+
+    return names.capitalize()
+
+
+def render_bar(
+    panel: libtcod.console.Console,
+    x: int,
+    y: int,
+    total_width: int,
+    label: str,
+    val: int,
+    maximum: int,
+    fg_color: libtcod.Color,
+    bg_color: libtcod.Color,
+):
+    """UI Bar rendering function
+    
+    Arguments:
+        panel {libtcod.console.Console} -- Target console to draw the bar
+        x {int} -- x position
+        y {int} -- y position
+        total_width {int} -- total desired width
+        label {str} -- label for the bar
+        val {int} -- current value for the bar
+        maximum {int} -- maximum expected value for the bar
+        fg_color {libtcod.Color} -- foreground color
+        bg_color {libtcod.Color} -- background color
+    """
+    bar_width = int(val / maximum * total_width)
+
+    # Render bar
+    libtcod.console_set_default_background(panel, bg_color)
+    libtcod.console_rect(panel, x, y, total_width, 1, False, libtcod.BKGND_SCREEN)
+    libtcod.console_set_default_background(panel, fg_color)
+    if bar_width > 0:
+        libtcod.console_rect(panel, x, y, bar_width, 1, False, libtcod.BKGND_SCREEN)
+
+    # Render text
+    libtcod.console_set_default_foreground(panel, libtcod.white)
+    libtcod.console_print_ex(
+        panel,
+        int(x + total_width / 2),
+        y,
+        libtcod.BKGND_NONE,
+        libtcod.CENTER,
+        f"{label}: {val}/{maximum}",
+    )
+
+
 def render_all(
     con: libtcod.console.Console,
+    panel: libtcod.console.Console,
     entities: list,
     player: object,
     game_map: object,
     fov_map: libtcod.map.Map,
     fov_recompute: bool,
+    message_log: object,
     screen_width: int,
     screen_height: int,
+    bar_width: int,
+    panel_height: int,
+    panel_y: int,
+    mouse: object,
     colors: dict,
 ):
     """Wrapper funtion to make libtcod calls rendering all entities
     
     Arguments:
         con {libtcod.console.Console} -- target console
+        panel {libtcod.console.Console} -- UI panel
         entities {list} -- list of entities to be drawn
         player {object} -- player object
         game_map {object} -- GameMap object
         fov_map {libtcod.map.Map} -- FoV map (what we see)
         fov_recompute {bool} -- flag controlling FoV calculation
+        message_log {MessageLog} -- Game message log
         screen_width {int} -- screen width
         screen_height {int} -- screen height
+        bar_width {int} -- Desired bar width
+        panel_height {int} -- UI panel height
+        panel_y {int} -- y position for the UI panel
+        mouse {object} -- Mouse cursor object
         colors {dict} -- colors to be used for the map
     """
     if fov_recompute:
@@ -65,17 +147,43 @@ def render_all(
     for entity in entities_in_render_order:
         draw_entity(con, entity, fov_map)
 
-    libtcod.console_set_default_foreground(con, libtcod.white)
-    libtcod.console_print_ex(
-        con,
+    libtcod.console_blit(con, 0, 0, screen_width, screen_height, 0, 0, 0)
+
+    libtcod.console_set_default_background(panel, libtcod.black)
+    libtcod.console_clear(panel)
+
+    # Print the game messages, one line at a time
+    y = 1
+    for message in message_log.messages:
+        libtcod.console_set_default_foreground(panel, message.color)
+        libtcod.console_print_ex(
+            panel, message_log.x, y, libtcod.BKGND_NONE, libtcod.LEFT, message.text
+        )
+        y += 1
+
+    render_bar(
+        panel,
         1,
-        screen_height - 2,
-        libtcod.BKGND_NONE,
-        libtcod.LEFT,
-        f"HP: {player.fighter.hp:02d}/{player.fighter.max_hp:02d}",
+        1,
+        bar_width,
+        "HP",
+        player.fighter.hp,
+        player.fighter.max_hp,
+        libtcod.light_red,
+        libtcod.darker_red,
     )
 
-    libtcod.console_blit(con, 0, 0, screen_width, screen_height, 0, 0, 0)
+    libtcod.console_set_default_foreground(panel, libtcod.light_gray)
+    libtcod.console_print_ex(
+        panel,
+        1,
+        0,
+        libtcod.BKGND_NONE,
+        libtcod.LEFT,
+        get_names_under_mouse(mouse, entities, fov_map),
+    )
+
+    libtcod.console_blit(panel, 0, 0, screen_width, panel_height, 0, 0, panel_y)
 
 
 def clear_all(con: libtcod.console.Console, entities: list):
