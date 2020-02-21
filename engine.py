@@ -179,7 +179,7 @@ def main():
             and inv_index < len(player.inventory.items)
         ):
             item = player.inventory.items[inv_index]
-            print(item)
+            player_turn_results.extend(player.inventory.use(item))
         # Handle game exit
         if _exit:
             if game_state == GameStates.SHOW_INVENTORY:
@@ -195,6 +195,7 @@ def main():
             message = player_turn_result.get("message")
             dead_entity = player_turn_result.get("dead")
             item_added = player_turn_result.get("item_added")
+            item_consumed = player_turn_result.get("consumed")
 
             if message:
                 message_log.add_message(message)
@@ -206,6 +207,8 @@ def main():
                 message_log.add_message(message)
             if item_added:
                 entities.remove(item_added)
+                game_state = GameStates.ENEMY_TURN
+            if item_consumed:
                 game_state = GameStates.ENEMY_TURN
 
         # After all input is handle, check if this is enemies turn
