@@ -81,6 +81,7 @@ def main():
     fov_map = initialize_fov(game_map)
     # Game state
     game_state = GameStates.PLAYERS_TURN
+    previous_game_state = game_state
 
     # Creating screen
     libtcod.console_init_root(
@@ -126,6 +127,7 @@ def main():
             panel_y=panel_y,
             mouse=mouse,
             colors=colors,
+            gs=game_state
         )
         fov_recompute = False
         libtcod.console_flush()
@@ -138,6 +140,7 @@ def main():
         # Map values for each action
         move = action.get("move")
         pickup = action.get("pickup")
+        show_inventory = action.get("show_inventory")
         _exit = action.get("exit")
         fullscreen = action.get("fullscreen")
         player_turn_results = []
@@ -166,9 +169,15 @@ def main():
                 message_log.add_message(
                     Message("There's nothing to pickup", color=libtcod.yellow)
                 )
+        if show_inventory:
+            previous_game_state = game_state
+            game_state = GameStates.SHOW_INVENTORY
         # Handle game exit
         if _exit:
-            return True
+            if game_state == GameStates.SHOW_INVENTORY:
+                game_state = previous_game_state
+            else:
+                return True
         # toggle fullscreen
         if fullscreen:
             libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
