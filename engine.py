@@ -127,7 +127,7 @@ def main():
             panel_y=panel_y,
             mouse=mouse,
             colors=colors,
-            gs=game_state
+            gs=game_state,
         )
         fov_recompute = False
         libtcod.console_flush()
@@ -136,11 +136,12 @@ def main():
         clear_all(console, entities)
 
         # Capture action for given input
-        action = handle_keys(key)
+        action = handle_keys(key, game_state)
         # Map values for each action
         move = action.get("move")
         pickup = action.get("pickup")
         show_inventory = action.get("show_inventory")
+        inv_index = action.get("inventory_index")
         _exit = action.get("exit")
         fullscreen = action.get("fullscreen")
         player_turn_results = []
@@ -172,6 +173,13 @@ def main():
         if show_inventory:
             previous_game_state = game_state
             game_state = GameStates.SHOW_INVENTORY
+        if (
+            inv_index is not None
+            and previous_game_state != GameStates.PLAYER_DEAD
+            and inv_index < len(player.inventory.items)
+        ):
+            item = player.inventory.items[inv_index]
+            print(item)
         # Handle game exit
         if _exit:
             if game_state == GameStates.SHOW_INVENTORY:
