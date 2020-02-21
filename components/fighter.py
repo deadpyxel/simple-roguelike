@@ -35,6 +35,20 @@ class Fighter:
             results.append({"dead": self.owner})
         return results
 
+    def heal(self, amount: int):
+        """Self-healing behaviour
+
+        Heals based on the given amount. 
+        Does not allow overhelaing
+        
+        Arguments:
+            amount {int} -- Amount to heal
+        """        
+        self.hp += amount
+
+        if self.hp > self.max_hp:
+            self.hp = self.max_hp
+
     def attack(self, target: object) -> list:
         """Attacking behaviour
         
