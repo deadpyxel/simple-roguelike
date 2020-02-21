@@ -1,11 +1,12 @@
 import tcod as libtcod
 
 from components.fighter import Fighter
+from components.inventory import Inventory
 from death_handlers import kill_monster, kill_player
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
-from game_messages import MessageLog
+from game_messages import Message, MessageLog
 from input_handlers import handle_keys
 from map_objects.game_map import GameMap
 from render_functions import clear_all, render_all, RenderOrder
@@ -52,6 +53,7 @@ def main():
     fighter_component = Fighter(
         hp=30, defense=2, power=5
     )  # define a fighter component for the player
+    inventory_component = Inventory(26)  # Inventory component for the player
     player = Entity(
         0,
         0,
@@ -61,6 +63,7 @@ def main():
         blocks=True,
         render_order=RenderOrder.ACTOR,
         fighter=fighter_component,
+        inventory=inventory_component,
     )
     # World entity list
     entities = [player]
@@ -78,6 +81,7 @@ def main():
     fov_map = initialize_fov(game_map)
     # Game state
     game_state = GameStates.PLAYERS_TURN
+    previous_game_state = game_state
 
     # Creating screen
     libtcod.console_init_root(
@@ -123,6 +127,7 @@ def main():
             panel_y=panel_y,
             mouse=mouse,
             colors=colors,
+            gs=game_state,
         )
         fov_recompute = False
         libtcod.console_flush()
@@ -131,9 +136,12 @@ def main():
         clear_all(console, entities)
 
         # Capture action for given input
-        action = handle_keys(key)
-        # Map values for each input
+        action = handle_keys(key, game_state)
+        # Map values for each action
         move = action.get("move")
+        pickup = action.get("pickup")
+        show_inventory = action.get("show_inventory")
+        inv_index = action.get("inventory_index")
         _exit = action.get("exit")
         fullscreen = action.get("fullscreen")
         player_turn_results = []
@@ -152,9 +160,32 @@ def main():
                     fov_recompute = True
                 # Now it is enemies turn
                 game_state = GameStates.ENEMY_TURN
+        elif pickup and game_state == GameStates.PLAYERS_TURN:
+            for entity in entities:
+                if entity.item and entity.x == player.x and entity.y == player.y:
+                    pickup_results = player.inventory.add_item(entity)
+                    player_turn_results.extend(pickup_results)
+                    break
+            else:
+                message_log.add_message(
+                    Message("There's nothing to pickup", color=libtcod.yellow)
+                )
+        if show_inventory:
+            previous_game_state = game_state
+            game_state = GameStates.SHOW_INVENTORY
+        if (
+            inv_index is not None
+            and previous_game_state != GameStates.PLAYER_DEAD
+            and inv_index < len(player.inventory.items)
+        ):
+            item = player.inventory.items[inv_index]
+            player_turn_results.extend(player.inventory.use(item))
         # Handle game exit
         if _exit:
-            return True
+            if game_state == GameStates.SHOW_INVENTORY:
+                game_state = previous_game_state
+            else:
+                return True
         # toggle fullscreen
         if fullscreen:
             libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
@@ -163,6 +194,8 @@ def main():
         for player_turn_result in player_turn_results:
             message = player_turn_result.get("message")
             dead_entity = player_turn_result.get("dead")
+            item_added = player_turn_result.get("item_added")
+            item_consumed = player_turn_result.get("consumed")
 
             if message:
                 message_log.add_message(message)
@@ -172,6 +205,11 @@ def main():
                 else:
                     message = kill_monster(dead_entity)
                 message_log.add_message(message)
+            if item_added:
+                entities.remove(item_added)
+                game_state = GameStates.ENEMY_TURN
+            if item_consumed:
+                game_state = GameStates.ENEMY_TURN
 
         # After all input is handle, check if this is enemies turn
         if game_state == GameStates.ENEMY_TURN:
