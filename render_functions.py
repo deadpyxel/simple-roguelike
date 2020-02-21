@@ -2,6 +2,9 @@ from enum import Enum, auto
 
 import tcod as libtcod
 
+from game_states import GameStates
+from menus import inventory_menu
+
 
 class RenderOrder(Enum):
     CORPSE = 1
@@ -95,6 +98,7 @@ def render_all(
     panel_y: int,
     mouse: object,
     colors: dict,
+    gs: GameStates,
 ):
     """Wrapper funtion to make libtcod calls rendering all entities
     
@@ -114,6 +118,7 @@ def render_all(
         panel_y {int} -- y position for the UI panel
         mouse {object} -- Mouse cursor object
         colors {dict} -- colors to be used for the map
+        gs {GameStates} -- Current Game State
     """
     if fov_recompute:
         # Draw all map tiles
@@ -184,6 +189,16 @@ def render_all(
     )
 
     libtcod.console_blit(panel, 0, 0, screen_width, panel_height, 0, 0, panel_y)
+
+    if gs == GameStates.SHOW_INVENTORY:
+        inventory_menu(
+            con,
+            "Press the key next to an item to use it, os ESC to cancel.\n",
+            player.inventory,
+            50,
+            screen_width,
+            screen_height,
+        )
 
 
 def clear_all(con: libtcod.console.Console, entities: list):

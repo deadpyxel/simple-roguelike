@@ -33,6 +33,10 @@ def handle_keys(key: libtcod.Key()) -> dict:
     if key_ch == "g":
         return {"pickup": True}
 
+    # Show inventory
+    if key_ch == "i":
+        return {"show_inventory": True}
+
     if key.vk == libtcod.KEY_ENTER and key.lalt:
         # Alt+Enter: toggle full screen
         return {"fullscreen": True}
