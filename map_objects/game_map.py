@@ -6,7 +6,8 @@ from components.ai import BasicMonster
 from components.fighter import Fighter
 from components.item import Item
 from entity import Entity
-from item_functions import cast_lighting, heal
+from game_messages import Message
+from item_functions import cast_fireball, cast_lighting, heal
 from map_objects.tile import Tile
 from map_objects.room import Room
 from render_functions import RenderOrder
@@ -211,6 +212,26 @@ class GameMap:
                         "!",
                         libtcod.violet,
                         "Healing Potion",
+                        render_order=RenderOrder.ITEM,
+                        item=item_component,
+                    )
+                elif item_chance < 85:
+                    item_component = Item(
+                        use_function=cast_fireball,
+                        targeting=True,
+                        targeting_message=Message(
+                            "Left-click a target position for the fireball, or right-click to cancel.",
+                            libtcod.light_cyan,
+                        ),
+                        damage=12,
+                        radius=3,
+                    )
+                    item = Entity(
+                        x,
+                        y,
+                        "#",
+                        libtcod.light_red,
+                        "Fireball Scroll",
                         render_order=RenderOrder.ITEM,
                         item=item_component,
                     )

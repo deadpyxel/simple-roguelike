@@ -150,6 +150,9 @@ class Entity:
             # Delete the path to free memory
         libtcod.path_delete(my_path)
 
+    def distance(self, x: int, y: int) -> float:
+        return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
+
     def distance_to(self, other: object) -> int or float:
         """Returns distance between entitities
         
