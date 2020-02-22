@@ -101,3 +101,58 @@ def cast_lighting(*args, **kwargs) -> list:
 
     return results
 
+
+def cast_fireball(*args, **kwargs) -> list:
+    """Casts a fireball in a given location.
+
+    Damages any entities that can take damage in the explosion radious
+    
+    Returns:
+        list -- results of the item usage
+    """
+    entities = kwargs.get("entities")  # available entities
+    fov_map = kwargs.get("fov_map")  # Field of vision
+    damage = kwargs.get("damage")  # Damage for the fireball
+    radius = kwargs.get("radius")  # Explosion radius
+    target_x = kwargs.get("target_x")  # x position to target fireball
+    target_y = kwargs.get("target_y")  # y position to target fireball
+
+    results = []
+
+    # If we are targeting something outiside FoV, do not consume the item
+    if not libtcod.map_is_in_fov(fov_map, target_x, target_y):
+        results.append(
+            {
+                "consumed": False,
+                "message": Message(
+                    "You cannot target something you can't see.", libtcod.yellow
+                ),
+            }
+        )
+        return results
+
+    # Else, target the tile and let it explode
+    results.append(
+        {
+            "consumed": True,
+            "message": Message(
+                f"The fireball explodes, burning everything within {radius} tiles!",
+                libtcod.orange,
+            ),
+        }
+    )
+
+    # If any entities are inside the explosion radious, process the damage
+    for entity in entities:
+        if entity.distance(target_x, target_y) <= radius and entity.fighter:
+            results.append(
+                {
+                    "message": Message(
+                        f"The {entity.name} gets burned for {damage} hit points.",
+                        libtcod.orange,
+                    )
+                }
+            )
+            results.extend(entity.fighter.take_damage(damage))
+
+    return results
