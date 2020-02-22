@@ -6,7 +6,8 @@ from components.ai import BasicMonster
 from components.fighter import Fighter
 from components.item import Item
 from entity import Entity
-from item_functions import heal
+from game_messages import Message
+from item_functions import cast_confusion, cast_fireball, cast_lighting, heal
 from map_objects.tile import Tile
 from map_objects.room import Room
 from render_functions import RenderOrder
@@ -202,16 +203,69 @@ class GameMap:
             if not any(
                 [entity for entity in entities if entity.x == x and entity.y == y]
             ):
-                item_component = Item(use_function=heal, amount=4)
-                item = Entity(
-                    x,
-                    y,
-                    "!",
-                    libtcod.violet,
-                    "Healing Potion",
-                    render_order=RenderOrder.ITEM,
-                    item=item_component,
-                )
+                item_chance = randint(0, 100)
+                if item_chance < 70:
+                    item_component = Item(use_function=heal, amount=4)
+                    item = Entity(
+                        x,
+                        y,
+                        "!",
+                        libtcod.violet,
+                        "Healing Potion",
+                        render_order=RenderOrder.ITEM,
+                        item=item_component,
+                    )
+                elif item_chance < 80:
+                    item_component = Item(
+                        use_function=cast_fireball,
+                        targeting=True,
+                        targeting_message=Message(
+                            "Left-click a target position for the fireball, or right-click to cancel.",
+                            libtcod.light_cyan,
+                        ),
+                        damage=12,
+                        radius=3,
+                    )
+                    item = Entity(
+                        x,
+                        y,
+                        "#",
+                        libtcod.light_red,
+                        "Fireball Scroll",
+                        render_order=RenderOrder.ITEM,
+                        item=item_component,
+                    )
+                elif item_chance < 90:
+                    item_component = Item(
+                        use_function=cast_confusion,
+                        targeting=True,
+                        targeting_message=Message(
+                            "Left-click an enemy to confuse it, or right-click to cancel.",
+                            libtcod.light_cyan,
+                        ),
+                    )
+                    item = Entity(
+                        x,
+                        y,
+                        "#",
+                        libtcod.light_purple,
+                        "Confusion Scroll",
+                        render_order=RenderOrder.ITEM,
+                        item=item_component,
+                    )
+                else:
+                    item_component = Item(
+                        use_function=cast_lighting, damage=20, maximum_range=5
+                    )
+                    item = Entity(
+                        x,
+                        y,
+                        "#",
+                        libtcod.yellow,
+                        "Ligthing Scroll",
+                        render_order=RenderOrder.ITEM,
+                        item=item_component,
+                    )
 
                 entities.append(item)
 

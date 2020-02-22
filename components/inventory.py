@@ -85,14 +85,21 @@ class Inventory:
                 }
             )
         else:
-            kwargs = {**item_component.function_kwargs, **kwargs}
-            item_use_results = item_component.use_function(self.owner, **kwargs)
-            for result in item_use_results:
-                if result.get("consumed"):
-                    # Once item has been used, remove from inventory
-                    self.remove_item(item_entity)
+            # If this item need targeting, and no target was selected
+            if item_component.targeting and not (
+                kwargs.get("target_x") or kwargs.get("target_y")
+            ):
+                results.append({"targeting": item_entity})
+            # Else just use the item with its item_function
+            else:
+                kwargs = {**item_component.function_kwargs, **kwargs}
+                item_use_results = item_component.use_function(self.owner, **kwargs)
+                for result in item_use_results:
+                    if result.get("consumed"):
+                        # Once item has been used, remove from inventory
+                        self.remove_item(item_entity)
 
-            results.extend(item_use_results)
+                results.extend(item_use_results)
 
         return results
 
