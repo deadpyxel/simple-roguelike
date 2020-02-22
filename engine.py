@@ -1,82 +1,31 @@
 import tcod as libtcod
 
-from components.fighter import Fighter
-from components.inventory import Inventory
 from death_handlers import kill_monster, kill_player
-from entity import Entity, get_blocking_entities_at_location
+from entity import get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
-from game_messages import Message, MessageLog
+from game_messages import Message
 from input_handlers import handle_keys, handle_mouse
-from map_objects.game_map import GameMap
+from loaders.initializers import get_configuration_params, get_game_objects
 from render_functions import clear_all, render_all, RenderOrder
 
 
 def main():
-    # Screen size
-    screen_width = 80
-    screen_height = 50
-    # UI settings
-    bar_width = 20
-    panel_height = 7
-    panel_y = screen_height - panel_height
-    message_x = bar_width + 2
-    message_width = screen_width - bar_width - 2
-    message_height = panel_height - 1
-    # Map size
-    map_width = 80
-    map_height = 43
-    # Room definitions
-    max_rooms = 30
-    room_min_size = 6
-    room_max_size = 10
-    # FoV configurations
-    fov_algorithm = 0  # use defualt algorithm
-    fov_light_walls = True  # light up walls we can see
-    fov_radius = 10  # radius of view
+    config_params = get_configuration_params()
+    ui_settings = config_params.get("ui_settings")
+    game_settings = config_params.get("game_settings")
+    colors = config_params.get("colors")
+    player, entities, game_map, message_log, game_state = get_game_objects(
+        config_params
+    )
+
     fov_recompute = True  # flag to trigger FoV computations
-    # Monster spawning settings
-    max_monsters_per_room = 3
-    # Define colors to be used in FoV
-    colors = {
-        "dark_wall": libtcod.Color(0, 0, 100),
-        "dark_ground": libtcod.Color(50, 50, 150),
-        "light_wall": libtcod.Color(130, 110, 50),
-        "light_ground": libtcod.Color(200, 180, 50),
-    }
+
     # Font settings
     libtcod.console_set_custom_font(
         "arial10x10.png", libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD
     )
 
-    # Player initialization
-    fighter_component = Fighter(
-        hp=30, defense=2, power=5
-    )  # define a fighter component for the player
-    inventory_component = Inventory(26)  # Inventory component for the player
-    player = Entity(
-        0,
-        0,
-        "@",
-        libtcod.white,
-        "Player",
-        blocks=True,
-        render_order=RenderOrder.ACTOR,
-        fighter=fighter_component,
-        inventory=inventory_component,
-    )
-    # World entity list
-    entities = [player]
-    # Map object
-    game_map = GameMap(map_width, map_height)
-    game_map.make_map(
-        max_rooms,
-        room_min_size,
-        room_max_size,
-        player,
-        entities,
-        max_monsters_per_room=max_monsters_per_room,
-    )
     # Fov map object
     fov_map = initialize_fov(game_map)
     # Game state
@@ -88,15 +37,20 @@ def main():
 
     # Creating screen
     libtcod.console_init_root(
-        screen_width, screen_height, "Roguelike using libtcod", False
+        ui_settings["screen_width"],
+        ui_settings["screen_height"],
+        config_params["window_title"],
+        False,
     )
 
     # Console object
-    console = libtcod.console.Console(screen_width, screen_height)
+    console = libtcod.console.Console(
+        ui_settings["screen_width"], ui_settings["screen_height"]
+    )
     # Panel object
-    panel = libtcod.console.Console(screen_width, panel_height)
-    # Message Log object
-    message_log = MessageLog(message_x, message_width, message_height)
+    panel = libtcod.console.Console(
+        ui_settings["screen_width"], ui_settings["panel_height"]
+    )
 
     # input objects
     key = libtcod.Key()
@@ -111,7 +65,12 @@ def main():
         # Trigger FoV calculation
         if fov_recompute == True:
             recompute_fov(
-                fov_map, player.x, player.y, fov_radius, fov_light_walls, fov_algorithm
+                fov_map,
+                player.x,
+                player.y,
+                game_settings["fov_radius"],
+                game_settings["fov_light_walls"],
+                game_settings["fov_algorithm"],
             )
         # Initial screen config
         render_all(
@@ -123,11 +82,11 @@ def main():
             fov_map=fov_map,
             fov_recompute=fov_recompute,
             message_log=message_log,
-            screen_width=screen_width,
-            screen_height=screen_height,
-            bar_width=bar_width,
-            panel_height=panel_height,
-            panel_y=panel_y,
+            screen_width=ui_settings["screen_width"],
+            screen_height=ui_settings["screen_height"],
+            bar_width=ui_settings["bar_width"],
+            panel_height=ui_settings["panel_height"],
+            panel_y=ui_settings["panel_y"],
             mouse=mouse,
             colors=colors,
             gs=game_state,
