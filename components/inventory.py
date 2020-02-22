@@ -96,3 +96,19 @@ class Inventory:
 
         return results
 
+    def drop_item(self, item: object) -> list:
+        results = []
+
+        item.x = self.owner.x
+        item.y = self.owner.y
+
+        self.remove_item(item)
+        results.append(
+            {
+                "item_dropped": item,
+                "message": Message(f"You dropped {item.name} in the ground."),
+            }
+        )
+
+        return results
+
