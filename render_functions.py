@@ -190,10 +190,10 @@ def render_all(
 
     libtcod.console_blit(panel, 0, 0, screen_width, panel_height, 0, 0, panel_y)
 
-    if gs == GameStates.SHOW_INVENTORY:
+    if gs in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         inventory_menu(
             con,
-            "Press the key next to an item to use it, os ESC to cancel.\n",
+            f"Press the key next to an item to {'use' if gs == GameStates.SHOW_INVENTORY else 'drop'} it, or ESC to cancel.\n",
             player.inventory,
             50,
             screen_width,

@@ -8,7 +8,7 @@ def handle_keys(key: libtcod.Key, game_state: GameStates) -> dict:
         return handle_player_turn_keys(key)
     elif game_state == GameStates.PLAYER_DEAD:
         return handle_player_dead_keys(key)
-    elif game_state == GameStates.SHOW_INVENTORY:
+    elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         return handle_inventory_keys(key)
     # No valid key was pressed
     return {}
@@ -43,12 +43,15 @@ def handle_player_turn_keys(key: libtcod.Key()) -> dict:
         return {"move": (1, 1)}
 
     # Item pickup action
-    if key_ch == "g":
+    elif key_ch == "g":
         return {"pickup": True}
 
     # Show inventory
-    if key_ch == "i":
+    elif key_ch == "i":
         return {"show_inventory": True}
+    # Drop inventory
+    elif key_ch == "d":
+        return {"drop_inventory": True}
 
     if key.vk == libtcod.KEY_ENTER and key.lalt:
         # Alt+Enter: toggle full screen
@@ -60,6 +63,7 @@ def handle_player_turn_keys(key: libtcod.Key()) -> dict:
 
     # No valid key was pressed
     return {}
+
 
 def handle_player_dead_keys(key: libtcod.Key()) -> dict:
     """Handler for any player keypress when dead
@@ -87,6 +91,7 @@ def handle_player_dead_keys(key: libtcod.Key()) -> dict:
     # No valid key was pressed
     return {}
 
+
 def handle_inventory_keys(key: libtcod.Key()) -> dict:
     """Handler for any keypress when opening inventory
     
@@ -96,9 +101,9 @@ def handle_inventory_keys(key: libtcod.Key()) -> dict:
     Returns:
         dict -- dictionary describing action for input
     """
-    index = key.c - ord('a')  # capture key character and get the index
+    index = key.c - ord("a")  # capture key character and get the index
     if index >= 0:
-        return {'inventory_index': index}
+        return {"inventory_index": index}
 
     if key.vk == libtcod.KEY_ENTER and key.lalt:
         # Alt+Enter: toggle full screen
