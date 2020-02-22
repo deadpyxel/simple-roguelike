@@ -8,6 +8,8 @@ def handle_keys(key: libtcod.Key, game_state: GameStates) -> dict:
         return handle_player_turn_keys(key)
     elif game_state == GameStates.PLAYER_DEAD:
         return handle_player_dead_keys(key)
+    elif game_state == GameStates.TARGET_MODE:
+        return handle_targeting_keys(key)
     elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         return handle_inventory_keys(key)
     # No valid key was pressed
@@ -114,4 +116,36 @@ def handle_inventory_keys(key: libtcod.Key()) -> dict:
         return {"exit": True}
 
     # No valid key was pressed
+    return {}
+
+
+def handle_targeting_keys(key:libtcod.Key) ->dict:
+    """Handles keypresses in targeting mode.
+
+    Only allows for ESC (exit).
+    
+    Arguments:
+        key {libtcod.Key} -- Key press object
+    
+    Returns:
+        dict -- actions to be taken given a keypress
+    """    
+    if key.vk== libtcod.KEY_ESCAPE:
+        return {'exit': True}
+    return {}
+
+def handle_mouse(mouse:libtcod.Mouse)->dict:
+    """Hendle mouse clicks
+    
+    Arguments:
+        mouse {libtcod.Mouse} -- mouse listener object
+    
+    Returns:
+        dict -- mouse actions
+    """    
+    (x, y) = (mouse.cx, mouse.cy)
+    if mouse.lbutton_pressed:
+        return {'left_click': (x, y)}
+    elif mouse.rbutton_pressed:
+        return {'right_click': (x, y)}
     return {}
