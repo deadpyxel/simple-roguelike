@@ -6,7 +6,8 @@ from components import BasicMonster, Fighter, Item
 from entity import Entity
 from game_messages import Message
 from item_functions import cast_confusion, cast_fireball, cast_lighting, heal
-from map_objects import Room, Tile
+from map_objects.room import Room
+from map_objects.tile import Tile
 from render_functions import RenderOrder
 
 
