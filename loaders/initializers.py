@@ -95,7 +95,24 @@ def get_configuration_params() -> dict:
     return constants
 
 
+def initialize_game_map(configs: dict, player: Entity, entities: list) -> GameMap:
+    # Map object
+    game_map = GameMap(configs["map_width"], configs["map_height"])
+    game_map.make_map(
+        configs["max_rooms"],
+        configs["room_min_size"],
+        configs["room_max_size"],
+        player,
+        entities,
+        max_monsters_per_room=configs["max_monsters_per_room"],
+    )
+
+    return game_map
+
+
 def get_game_objects(configs: dict) -> list:
+    game_settings = configs["game_settings"]
+    ui_settings = configs["ui_settings"]
     fighter_component = Fighter(
         hp=30, defense=2, power=5
     )  # define a fighter component for the player
@@ -114,20 +131,12 @@ def get_game_objects(configs: dict) -> list:
     # World entity list
     entities = [player]
     # Map object
-    game_map = GameMap(configs["game_settings"]["map_width"], configs["game_settings"]["map_height"])
-    game_map.make_map(
-        configs["game_settings"]["max_rooms"],
-        configs["game_settings"]["room_min_size"],
-        configs["game_settings"]["room_max_size"],
-        player,
-        entities,
-        max_monsters_per_room=configs["game_settings"]["max_monsters_per_room"],
-    )
+    game_map = initialize_game_map(game_settings, player, entities)
     # Message Log object
     message_log = MessageLog(
-        configs["ui_settings"]["message_x"],
-        configs["ui_settings"]["message_width"],
-        configs["ui_settings"]["message_height"],
+        ui_settings["message_x"],
+        ui_settings["message_width"],
+        ui_settings["message_height"],
     )
     # Game state
     game_state = GameStates.PLAYERS_TURN
